@@ -26,9 +26,9 @@ onready var select_ring: Sprite = $SelectRing
 onready var tween: Tween = $Tween
 
 # 预加载的贴图缓存
-static var _texture_cache = {}
+var _texture_cache = {}
 
-static func get_gem_texture(type: int) -> Texture:
+func get_gem_texture(type: int) -> Texture:
 	if _texture_cache.has(type):
 		return _texture_cache[type]
 	if type >= 0 and type < GameManager.GEM_TEXTURES.size():
