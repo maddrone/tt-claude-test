@@ -1,37 +1,52 @@
 extends Node2D
 # ============================================================
 # Main.gd — 主场景入口
-# 职责：初始化游戏、加载关卡、管理场景切换
 # ============================================================
 
-var board_scene := preload("res://scenes/board/Board.tscn")
-var board_instance = null
+onready var board = $Board
+onready var board_bg = $BoardBackground
+onready var shake_node = $Board  # 抖动棋盘节点而非 Camera
+
+var _shake_intensity := 0.0
+var _board_origin := Vector2.ZERO
+
+func _ready():
+	randomize()
+	_board_origin = board.position
+	LevelManager.load_level(1)
+	# 连接抖动信号
+	GameManager.connect("combo_changed", self, "_on_combo")
+	GameManager.connect("gems_matched", self, "_on_match")
 
 
-func _ready() -> void:
-	print("=== 开心消消乐 ===")
-	print("[Main] 游戏启动")
-	_start_game()
+func _process(delta):
+	# 屏幕抖动（直接抖棋盘节点）
+	if _shake_intensity > 0.5:
+		board.position = _board_origin + Vector2(
+			rand_range(-_shake_intensity, _shake_intensity),
+			rand_range(-_shake_intensity, _shake_intensity))
+		_shake_intensity = lerp(_shake_intensity, 0.0, 5.0 * delta)
+	else:
+		_shake_intensity = 0.0
+		board.position = _board_origin
 
 
-func _start_game() -> void:
-	"""启动游戏流程"""
-	var level_data = LevelManager.load_level(1)
-	print("[Main] 关卡: %s" % str(level_data.get("name", "未知")))
-
-	board_instance = board_scene.instance()
-	add_child(board_instance)
-
-	GameManager.current_state = GameManager.GameState.READY
-	print("[Main] 游戏状态: READY")
+func _shake(intensity: float):
+	_shake_intensity = max(_shake_intensity, intensity)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	# 开发调试：按 ESC 退出
+func _on_combo(combo):
+	if combo >= 2:
+		_shake(GameManager.get_screen_shake_intensity())
+
+func _on_match(data):
+	if data.get("count", 0) >= 4:
+		_shake(4.0)
+
+
+func _unhandled_input(event):
 	if event is InputEventKey and event.pressed:
-		match event.scancode:
-			KEY_ESCAPE:
-				get_tree().quit()
-			KEY_R:
-				# 重新开始当前关卡
-				get_tree().reload_current_scene()
+		if event.scancode == KEY_ESCAPE:
+			get_tree().quit()
+		elif event.scancode == KEY_R:
+			get_tree().reload_current_scene()
