@@ -34,8 +34,8 @@ const SFX = {
 }
 
 # ── 节点引用 ──────────────────────────────────────────────
-var bgm_players := []       # Array of AudioStreamPlayer
-var sfx_pool := []           # SFX 播放器对象池
+var bgm_players = []       # Array of AudioStreamPlayer
+var sfx_pool = []           # SFX 播放器对象池
 var tween: Tween             # 用于音量过渡
 
 const SFX_POOL_SIZE := 8    # SFX 同时播放上限（低端友好）

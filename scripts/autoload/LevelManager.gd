@@ -23,11 +23,11 @@ const LEVELS_DATA_PATH := "res://data/levels.json"
 const MAX_STARS := 3
 
 # ── 数据 ─────────────────────────────────────────────────
-var all_levels := []             # 所有关卡配置
-var current_level_data := {}     # 当前关卡数据
-var objective_progress := {}     # 目标进度 {objective_id: current_value}
-var unlocked_levels := [1]       # 已解锁关卡列表
-var level_stars := {}            # {level_id: star_count}
+var all_levels = []             # 所有关卡配置
+var current_level_data = {}     # 当前关卡数据
+var objective_progress = {}     # 目标进度 {objective_id: current_value}
+var unlocked_levels = [1]       # 已解锁关卡列表
+var level_stars = {}            # {level_id: star_count}
 
 
 func _ready() -> void:

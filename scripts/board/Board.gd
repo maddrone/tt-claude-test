@@ -8,7 +8,7 @@ onready var effects_container: Node2D = $EffectsContainer
 
 var gem_scene: PackedScene = preload("res://scenes/gem/Gem.tscn")
 
-var grid := []  # grid[col][row] = Gem or null
+var grid = []  # grid[col][row] = Gem or null
 var selected_gem = null
 var is_processing := false
 
@@ -33,7 +33,7 @@ func _ready():
 func _init_grid():
 	grid.clear()
 	for col in range(GameManager.BOARD_COLS):
-		var column := []
+		var column = []
 		for _row in range(GameManager.BOARD_ROWS):
 			column.append(null)
 		grid.append(column)
