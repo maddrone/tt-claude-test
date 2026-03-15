@@ -24,7 +24,7 @@ GEM_CONFIGS = [
 
 SIZE = 128  # 宝石贴图尺寸
 HALF = SIZE // 2
-BOARD_CELL = 80
+BOARD_CELL = 72  # 必须与 GameManager.CELL_SIZE 一致
 
 
 def create_radial_gradient(size, center, radius, color_center, color_edge):

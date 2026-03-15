@@ -4,7 +4,6 @@ extends Node2D
 # ============================================================
 
 signal gem_selected(gem)
-signal move_completed(gem)
 
 var gem_type: int = -1
 var grid_col: int = 0

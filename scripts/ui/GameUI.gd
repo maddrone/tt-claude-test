@@ -15,6 +15,25 @@ func _ready():
 	_combo_tween = Tween.new()
 	add_child(_combo_tween)
 
+	# 设置较大的字体
+	var font_data = DynamicFontData.new()
+	font_data.font_path = "res://assets/fonts/LiberationSans-Bold.ttf"
+
+	var font_hud = DynamicFont.new()
+	font_hud.font_data = font_data
+	font_hud.size = 28
+	font_hud.outline_size = 2
+	font_hud.outline_color = Color(0, 0, 0, 0.6)
+	for label in [score_label, moves_label, level_label]:
+		label.add_font_override("font", font_hud)
+
+	var font_combo = DynamicFont.new()
+	font_combo.font_data = font_data
+	font_combo.size = 40
+	font_combo.outline_size = 3
+	font_combo.outline_color = Color(0, 0, 0, 0.8)
+	combo_label.add_font_override("font", font_combo)
+
 	combo_label.visible = false
 
 	GameManager.connect("score_changed", self, "_on_score")

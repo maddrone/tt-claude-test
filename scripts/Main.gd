@@ -14,6 +14,9 @@ func _ready():
 	randomize()
 	_board_origin = board.position
 	LevelManager.load_level(1)
+	# load_level 会调用 start_level 把状态设为 LOADING，
+	# Board._ready 在此之前已完成棋盘初始化，需要恢复为 READY
+	GameManager.current_state = GameManager.GameState.READY
 	# 连接抖动信号
 	GameManager.connect("combo_changed", self, "_on_combo")
 	GameManager.connect("gems_matched", self, "_on_match")
