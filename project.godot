@@ -9,8 +9,8 @@ _global_script_class_icons={  }
 
 [application]
 
-config/name="Match3 - 开心消消乐"
-config/description="A juicy match-3 puzzle game built with Godot 3.5 LTS"
+config/name="Gem Blitz Endless - 宝石闪电无限"
+config/description="Arcade match-3 endless mode with special gems and power-ups"
 run/main_scene="res://scenes/Main.tscn"
 config/icon="res://icon.png"
 
@@ -45,6 +45,6 @@ quality/intended_usage/framebuffer_allocation=0
 quality/intended_usage/framebuffer_allocation.mobile=0
 vram_compression/import_etc=true
 vram_compression/import_etc2=false
-environment/default_clear_color=Color( 0.12, 0.11, 0.18, 1 )
+environment/default_clear_color=Color( 0.043, 0.043, 0.086, 1 )
 quality/filters/msaa=0
 quality/filters/use_fxaa=false

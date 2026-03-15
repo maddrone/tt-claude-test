@@ -1,68 +1,125 @@
 extends Node2D
 # ============================================================
-# Gem.gd — 宝石节点（使用 Sprite 贴图）
+# Gem.gd — 宝石节点
+# 支持基础颜色 + 特殊类型叠加
 # ============================================================
 
-signal gem_selected(gem)
-
-var gem_type: int = -1
+var gem_color: int = -1       # GemColor 枚举（0-5），COLOR_BOMB 时为 -1
+var special_type: int = GameManager.SpecialType.NONE
 var grid_col: int = 0
 var grid_row: int = 0
 var is_selected: bool = false
 var is_matched: bool = false
 var is_moving: bool = false
-var is_special: bool = false
 
 const MOVE_DURATION := 0.15
 const FALL_DURATION := 0.2
 const ELIMINATE_DURATION := 0.25
 const SELECT_SCALE := 1.12
 const BOUNCE_SCALE := 1.2
-const GEM_DISPLAY_SIZE := 60.0  # 宝石显示像素尺寸
+const GEM_DISPLAY_SIZE := 60.0
 
 onready var sprite: Sprite = $Sprite
+onready var special_overlay: Sprite = $SpecialOverlay
 onready var select_ring: Sprite = $SelectRing
 onready var tween: Tween = $Tween
 
-# 预加载的贴图缓存
 var _texture_cache = {}
 
-func get_gem_texture(type: int) -> Texture:
-	if _texture_cache.has(type):
-		return _texture_cache[type]
-	if type >= 0 and type < GameManager.GEM_TEXTURES.size():
-		var tex = load(GameManager.GEM_TEXTURES[type])
-		_texture_cache[type] = tex
+
+func get_gem_texture(color_idx: int) -> Texture:
+	if _texture_cache.has(color_idx):
+		return _texture_cache[color_idx]
+	if color_idx >= 0 and color_idx < GameManager.GEM_TEXTURES.size():
+		var tex = load(GameManager.GEM_TEXTURES[color_idx])
+		_texture_cache[color_idx] = tex
 		return tex
 	return null
 
 
 func _ready():
 	select_ring.visible = false
-	if gem_type >= 0:
+	special_overlay.visible = false
+	if gem_color >= 0:
 		_apply_texture()
 
 
-func init(type: int, col: int, row: int):
-	gem_type = type
+func init(color: int, col: int, row: int, special: int = GameManager.SpecialType.NONE):
+	gem_color = color
+	special_type = special
 	grid_col = col
 	grid_row = row
-	is_special = type >= GameManager.NORMAL_GEM_COUNT
 	position = GameManager.grid_to_pixel(col, row)
 	_apply_texture()
+	_apply_special_overlay()
+
+
+func set_special(special: int):
+	special_type = special
+	_apply_special_overlay()
+
+
+func is_special() -> bool:
+	return special_type != GameManager.SpecialType.NONE
+
+
+func is_color_bomb() -> bool:
+	return special_type == GameManager.SpecialType.COLOR_BOMB
+
+
+func get_match_color() -> int:
+	return gem_color
 
 
 func _apply_texture():
 	if sprite == null:
 		return
-	var tex = get_gem_texture(gem_type)
+	if special_type == GameManager.SpecialType.COLOR_BOMB:
+		var tex = load("res://assets/sprites/gem_rainbow.png")
+		if tex:
+			sprite.texture = tex
+			var tex_size = tex.get_size()
+			if tex_size.x > 0:
+				sprite.scale = Vector2(GEM_DISPLAY_SIZE / tex_size.x, GEM_DISPLAY_SIZE / tex_size.x)
+		return
+	var tex = get_gem_texture(gem_color)
 	if tex:
 		sprite.texture = tex
-		# 缩放贴图到目标显示尺寸
 		var tex_size = tex.get_size()
 		if tex_size.x > 0:
 			var s = GEM_DISPLAY_SIZE / tex_size.x
 			sprite.scale = Vector2(s, s)
+
+
+func _apply_special_overlay():
+	if special_overlay == null:
+		return
+	special_overlay.visible = false
+	match special_type:
+		GameManager.SpecialType.STRIPED_H:
+			var tex = load("res://assets/sprites/gem_striped_h.png")
+			if tex:
+				special_overlay.texture = tex
+				var s = GEM_DISPLAY_SIZE / tex.get_size().x
+				special_overlay.scale = Vector2(s, s)
+				special_overlay.visible = true
+		GameManager.SpecialType.STRIPED_V:
+			var tex = load("res://assets/sprites/gem_striped_v.png")
+			if tex:
+				special_overlay.texture = tex
+				var s = GEM_DISPLAY_SIZE / tex.get_size().x
+				special_overlay.scale = Vector2(s, s)
+				special_overlay.visible = true
+		GameManager.SpecialType.WRAPPED:
+			var tex = load("res://assets/sprites/gem_bomb.png")
+			if tex:
+				special_overlay.texture = tex
+				var s = GEM_DISPLAY_SIZE / tex.get_size().x
+				special_overlay.scale = Vector2(s, s)
+				special_overlay.visible = true
+		GameManager.SpecialType.COLOR_BOMB:
+			special_overlay.visible = false
+			_apply_texture()
 
 
 func set_selected(selected: bool):
@@ -124,7 +181,6 @@ func eliminate(delay: float = 0.0):
 
 
 func spawn_drop(from_y: float, delay: float = 0.0):
-	"""从指定 y 坐标掉落到当前位置（出场动画）"""
 	var target = position
 	position.y = from_y
 	modulate.a = 1.0
@@ -139,8 +195,14 @@ func spawn_drop(from_y: float, delay: float = 0.0):
 	tween.start()
 
 
-func _on_input_event(_viewport, event, _shape_idx):
-	if not GameManager.is_input_allowed():
+func play_special_create_anim():
+	if not is_inside_tree():
 		return
-	if event is InputEventMouseButton and event.pressed:
-		emit_signal("gem_selected", self)
+	tween.stop_all()
+	tween.interpolate_property(self, "scale",
+		Vector2.ONE * 1.5, Vector2.ONE,
+		0.3, Tween.TRANS_BACK, Tween.EASE_OUT)
+	tween.interpolate_property(self, "modulate",
+		Color(2, 2, 2, 1), Color(1, 1, 1, 1),
+		0.3, Tween.TRANS_QUAD, Tween.EASE_OUT)
+	tween.start()
