@@ -167,7 +167,7 @@ func _init_objectives() -> void:
 
 func get_gem_type_count() -> int:
 	"""获取当前关卡使用的宝石颜色数量"""
-	return current_level_data.get("gem_types", GameManager.NORMAL_GEM_COUNT)
+	return int(current_level_data.get("gem_types", GameManager.NORMAL_GEM_COUNT))
 
 
 func has_special_rule(rule: String) -> bool:
