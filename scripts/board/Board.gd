@@ -67,7 +67,8 @@ func _create_gem(type: int, col: int, row: int):
 	var gem = gem_scene.instance()
 	gems_container.add_child(gem)
 	gem.init(type, col, row)
-	gem.connect("gem_selected", self, "_on_gem_selected")
+	# 注意：不连接 gem_selected 信号，统一由 _input → _handle_touch 处理输入
+	# 避免 _input 和 Area2D._on_input_event 同帧双重触发导致选中后立即取消
 	grid[col][row] = gem
 	return gem
 
@@ -131,20 +132,6 @@ func _handle_swipe(end_pos: Vector2):
 		_try_swap(selected_gem, grid[tc][tr])
 	else:
 		_deselect()
-
-
-func _on_gem_selected(gem):
-	if is_processing:
-		return
-	if selected_gem == null:
-		_select_gem(gem)
-	elif selected_gem == gem:
-		_deselect()
-	elif _are_adjacent(selected_gem, gem):
-		_try_swap(selected_gem, gem)
-	else:
-		_deselect()
-		_select_gem(gem)
 
 
 func _select_gem(gem):
