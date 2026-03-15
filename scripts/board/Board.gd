@@ -84,7 +84,7 @@ func _input(event):
 			is_touching = true
 			_handle_touch(pos)
 		else:
-			if is_touching and selected_gem:
+			if is_touching and selected_gem and pos.distance_to(touch_start_pos) > SWIPE_THRESHOLD:
 				_handle_swipe(pos)
 			is_touching = false
 
