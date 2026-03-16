@@ -1,7 +1,7 @@
 extends Node2D
 # ============================================================
 # Gem.gd — 宝石节点
-# 支持基础颜色 + 特殊类型叠加
+# 支持基础颜色 + 特殊类型（程序化绘制标记）
 # ============================================================
 
 var gem_color: int = -1       # GemColor 枚举（0-5），COLOR_BOMB 时为 -1
@@ -20,7 +20,6 @@ const BOUNCE_SCALE := 1.2
 const GEM_DISPLAY_SIZE := 60.0
 
 onready var sprite: Sprite = $Sprite
-onready var special_overlay: Sprite = $SpecialOverlay
 onready var select_ring: Sprite = $SelectRing
 onready var tween: Tween = $Tween
 
@@ -39,7 +38,6 @@ func get_gem_texture(color_idx: int) -> Texture:
 
 func _ready():
 	select_ring.visible = false
-	special_overlay.visible = false
 	if gem_color >= 0:
 		_apply_texture()
 
@@ -51,12 +49,13 @@ func init(color: int, col: int, row: int, special: int = GameManager.SpecialType
 	grid_row = row
 	position = GameManager.grid_to_pixel(col, row)
 	_apply_texture()
-	_apply_special_overlay()
+	update()  # 触发 _draw() 绘制特殊标记
 
 
 func set_special(special: int):
 	special_type = special
-	_apply_special_overlay()
+	_apply_texture()
+	update()
 
 
 func is_special() -> bool:
@@ -75,6 +74,7 @@ func _apply_texture():
 	if sprite == null:
 		return
 	if special_type == GameManager.SpecialType.COLOR_BOMB:
+		# 彩色炸弹使用彩虹纹理
 		var tex = load("res://assets/sprites/gem_rainbow.png")
 		if tex:
 			sprite.texture = tex
@@ -82,6 +82,7 @@ func _apply_texture():
 			if tex_size.x > 0:
 				sprite.scale = Vector2(GEM_DISPLAY_SIZE / tex_size.x, GEM_DISPLAY_SIZE / tex_size.x)
 		return
+	# 所有其他宝石（包括特殊）都使用基础颜色纹理
 	var tex = get_gem_texture(gem_color)
 	if tex:
 		sprite.texture = tex
@@ -91,35 +92,66 @@ func _apply_texture():
 			sprite.scale = Vector2(s, s)
 
 
-func _apply_special_overlay():
-	if special_overlay == null:
-		return
-	special_overlay.visible = false
+# ── 程序化绘制特殊宝石标记 ──────────────────────────────
+func _draw():
 	match special_type:
 		GameManager.SpecialType.STRIPED_H:
-			var tex = load("res://assets/sprites/gem_striped_h.png")
-			if tex:
-				special_overlay.texture = tex
-				var s = GEM_DISPLAY_SIZE / tex.get_size().x
-				special_overlay.scale = Vector2(s, s)
-				special_overlay.visible = true
+			_draw_striped_h()
 		GameManager.SpecialType.STRIPED_V:
-			var tex = load("res://assets/sprites/gem_striped_v.png")
-			if tex:
-				special_overlay.texture = tex
-				var s = GEM_DISPLAY_SIZE / tex.get_size().x
-				special_overlay.scale = Vector2(s, s)
-				special_overlay.visible = true
+			_draw_striped_v()
 		GameManager.SpecialType.WRAPPED:
-			var tex = load("res://assets/sprites/gem_bomb.png")
-			if tex:
-				special_overlay.texture = tex
-				var s = GEM_DISPLAY_SIZE / tex.get_size().x
-				special_overlay.scale = Vector2(s, s)
-				special_overlay.visible = true
-		GameManager.SpecialType.COLOR_BOMB:
-			special_overlay.visible = false
-			_apply_texture()
+			_draw_wrapped()
+
+
+func _draw_striped_h():
+	# 三条水平白色条纹
+	var half = GEM_DISPLAY_SIZE * 0.4
+	var stripe_color = Color(1, 1, 1, 0.7)
+	var w = 2.5
+	for i in [-1, 0, 1]:
+		var y = i * 8.0
+		draw_line(Vector2(-half, y), Vector2(half, y), stripe_color, w)
+	# 两侧小三角箭头
+	var arrow_color = Color(1, 1, 1, 0.9)
+	draw_line(Vector2(-half - 2, 0), Vector2(-half + 6, -5), arrow_color, 2.0)
+	draw_line(Vector2(-half - 2, 0), Vector2(-half + 6, 5), arrow_color, 2.0)
+	draw_line(Vector2(half + 2, 0), Vector2(half - 6, -5), arrow_color, 2.0)
+	draw_line(Vector2(half + 2, 0), Vector2(half - 6, 5), arrow_color, 2.0)
+
+
+func _draw_striped_v():
+	# 三条垂直白色条纹
+	var half = GEM_DISPLAY_SIZE * 0.4
+	var stripe_color = Color(1, 1, 1, 0.7)
+	var w = 2.5
+	for i in [-1, 0, 1]:
+		var x = i * 8.0
+		draw_line(Vector2(x, -half), Vector2(x, half), stripe_color, w)
+	# 上下小三角箭头
+	var arrow_color = Color(1, 1, 1, 0.9)
+	draw_line(Vector2(0, -half - 2), Vector2(-5, -half + 6), arrow_color, 2.0)
+	draw_line(Vector2(0, -half - 2), Vector2(5, -half + 6), arrow_color, 2.0)
+	draw_line(Vector2(0, half + 2), Vector2(-5, half - 6), arrow_color, 2.0)
+	draw_line(Vector2(0, half + 2), Vector2(5, half - 6), arrow_color, 2.0)
+
+
+func _draw_wrapped():
+	# 菱形包裹框
+	var r = GEM_DISPLAY_SIZE * 0.38
+	var wrap_color = Color(1, 1, 1, 0.8)
+	var w = 2.5
+	# 外框菱形
+	draw_line(Vector2(0, -r), Vector2(r, 0), wrap_color, w)
+	draw_line(Vector2(r, 0), Vector2(0, r), wrap_color, w)
+	draw_line(Vector2(0, r), Vector2(-r, 0), wrap_color, w)
+	draw_line(Vector2(-r, 0), Vector2(0, -r), wrap_color, w)
+	# 四角小圆点
+	var dot_color = Color(1, 1, 1, 0.9)
+	var dot_r = 3.0
+	draw_circle(Vector2(0, -r), dot_r, dot_color)
+	draw_circle(Vector2(r, 0), dot_r, dot_color)
+	draw_circle(Vector2(0, r), dot_r, dot_color)
+	draw_circle(Vector2(-r, 0), dot_r, dot_color)
 
 
 func set_selected(selected: bool):

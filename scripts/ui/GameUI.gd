@@ -38,6 +38,9 @@ func _ready():
 	_time_bonus_tween = Tween.new()
 	add_child(_time_bonus_tween)
 
+	# 字体设置
+	_setup_fonts()
+
 	# 连接信号
 	GameManager.connect("score_changed", self, "_on_score")
 	GameManager.connect("time_changed", self, "_on_time")
@@ -64,6 +67,128 @@ func _ready():
 
 	# 显示主菜单
 	_show_main_menu()
+
+
+# ── 字体 ────────────────────────────────────────────────
+func _setup_fonts():
+	var font_data = DynamicFontData.new()
+	font_data.font_path = "res://assets/fonts/LiberationSans-Bold.ttf"
+
+	# HUD 字体（分数、时间等）
+	var font_hud = DynamicFont.new()
+	font_hud.font_data = font_data
+	font_hud.size = 28
+	font_hud.outline_size = 2
+	font_hud.outline_color = Color(0, 0, 0, 0.6)
+
+	# 分数大数字
+	var font_score = DynamicFont.new()
+	font_score.font_data = font_data
+	font_score.size = 36
+	font_score.outline_size = 2
+	font_score.outline_color = Color(0, 0, 0, 0.6)
+
+	# 连击文字
+	var font_combo = DynamicFont.new()
+	font_combo.font_data = font_data
+	font_combo.size = 44
+	font_combo.outline_size = 3
+	font_combo.outline_color = Color(0, 0, 0, 0.8)
+
+	# 时间奖励
+	var font_bonus = DynamicFont.new()
+	font_bonus.font_data = font_data
+	font_bonus.size = 32
+	font_bonus.outline_size = 2
+	font_bonus.outline_color = Color(0, 0, 0, 0.7)
+
+	# 标题字体（主菜单/游戏结束）
+	var font_title = DynamicFont.new()
+	font_title.font_data = font_data
+	font_title.size = 48
+	font_title.outline_size = 3
+	font_title.outline_color = Color(0, 0, 0, 0.8)
+
+	# 副标题/按钮
+	var font_subtitle = DynamicFont.new()
+	font_subtitle.font_data = font_data
+	font_subtitle.size = 24
+	font_subtitle.outline_size = 2
+	font_subtitle.outline_color = Color(0, 0, 0, 0.5)
+
+	# 小字体（BEST, SCORE 标签等）
+	var font_small = DynamicFont.new()
+	font_small.font_data = font_data
+	font_small.size = 18
+	font_small.outline_size = 1
+	font_small.outline_color = Color(0, 0, 0, 0.5)
+
+	# 应用到 HUD
+	score_label.add_font_override("font", font_score)
+	score_label.add_color_override("font_color", Color.white)
+	best_label.add_font_override("font", font_hud)
+	best_label.add_color_override("font_color", GameManager.COLOR_GOLD)
+	multiplier_label.add_font_override("font", font_hud)
+	timer_label.add_font_override("font", font_hud)
+	timer_label.add_color_override("font_color", Color.white)
+	combo_label.add_font_override("font", font_combo)
+	time_bonus_label.add_font_override("font", font_bonus)
+
+	# BEST / SCORE 标签
+	var best_title = $HUD/TopBar/ScorePanel/BestLabel
+	var score_title = $HUD/TopBar/ScorePanel/ScoreTitle
+	best_title.add_font_override("font", font_small)
+	best_title.add_color_override("font_color", Color(1, 1, 1, 0.6))
+	score_title.add_font_override("font", font_small)
+	score_title.add_color_override("font_color", Color(1, 1, 1, 0.6))
+
+	# 暂停按钮
+	pause_btn.add_font_override("font", font_hud)
+
+	# 道具栏
+	var items_label = $HUD/PowerupBar/ItemsLabel
+	items_label.add_font_override("font", font_small)
+	items_label.add_color_override("font_color", Color(1, 1, 1, 0.5))
+	hammer_btn.add_font_override("font", font_hud)
+	shuffle_btn.add_font_override("font", font_hud)
+	hammer_count.add_font_override("font", font_small)
+	hammer_count.add_color_override("font_color", GameManager.COLOR_GOLD)
+	shuffle_count.add_font_override("font", font_small)
+	shuffle_count.add_color_override("font_color", GameManager.COLOR_CYAN)
+
+	# 主菜单
+	var title_label = main_menu_panel.get_node("VBox/TitleLabel")
+	title_label.add_font_override("font", font_title)
+	title_label.add_color_override("font_color", GameManager.COLOR_GOLD)
+	var subtitle_label = main_menu_panel.get_node("VBox/SubtitleLabel")
+	subtitle_label.add_font_override("font", font_subtitle)
+	subtitle_label.add_color_override("font_color", Color(1, 1, 1, 0.7))
+	var start_btn = main_menu_panel.get_node("VBox/StartBtn")
+	start_btn.add_font_override("font", font_hud)
+	var hs_btn = main_menu_panel.get_node("VBox/HighScoreBtn")
+	hs_btn.add_font_override("font", font_subtitle)
+	var hs_list = main_menu_panel.get_node("VBox/HighScoreList")
+	hs_list.add_font_override("font", font_subtitle)
+
+	# 游戏结束
+	var go_title = game_over_panel.get_node("VBox/GameOverTitle")
+	go_title.add_font_override("font", font_title)
+	go_title.add_color_override("font_color", Color("#FF4444"))
+	var go_score_title = game_over_panel.get_node("VBox/ScoreTitle")
+	go_score_title.add_font_override("font", font_small)
+	go_score_title.add_color_override("font_color", Color(1, 1, 1, 0.6))
+	var go_score = game_over_panel.get_node("VBox/FinalScoreLabel")
+	go_score.add_font_override("font", font_title)
+	go_score.add_color_override("font_color", Color.white)
+	var go_record = game_over_panel.get_node("VBox/RecordLabel")
+	go_record.add_font_override("font", font_hud)
+	var go_best = game_over_panel.get_node("VBox/BestScoreLabel")
+	go_best.add_font_override("font", font_hud)
+	go_best.add_color_override("font_color", Color(1, 1, 1, 0.7))
+	var replay_btn = game_over_panel.get_node("VBox/ReplayBtn")
+	replay_btn.add_font_override("font", font_hud)
+	var menu_btn = game_over_panel.get_node("VBox/MenuBtn")
+	menu_btn.add_font_override("font", font_subtitle)
 
 
 # ── 主菜单 ──────────────────────────────────────────────

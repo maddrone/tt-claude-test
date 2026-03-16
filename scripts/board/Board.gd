@@ -805,6 +805,7 @@ func _auto_shuffle():
 			if grid[col][row] != null and idx < colors.size():
 				grid[col][row].gem_color = colors[idx]
 				grid[col][row]._apply_texture()
+				grid[col][row].update()  # 重绘特殊标记
 				idx += 1
 	# 确保有有效移动
 	if not _has_valid_moves():

@@ -10,10 +10,6 @@ script = ExtResource( 1 )
 
 [node name="Sprite" type="Sprite" parent="."]
 
-[node name="SpecialOverlay" type="Sprite" parent="."]
-visible = false
-modulate = Color( 1, 1, 1, 0.85 )
-
 [node name="SelectRing" type="Sprite" parent="."]
 visible = false
 modulate = Color( 1, 1, 0.7, 0.8 )
